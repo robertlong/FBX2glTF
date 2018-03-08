@@ -38,8 +38,8 @@ function convert(srcFile, destFile, opts = []) {
         throw new Error(`Unsupported file extension: ${destFile}`);
       }
 
-      let srcPath = fs.realpathSync(srcFile);
-      let destDir = fs.realpathSync(path.dirname(destFile));
+      let srcPath = srcFile;
+      let destDir = path.dirname(destFile);
       let destPath = path.join(destDir, path.basename(destFile, destExt));
 
       let args = opts.slice(0);
@@ -67,6 +67,11 @@ function convert(srcFile, destFile, opts = []) {
           reject(new Error(`Converter output:\n` +
                            (output.length ? output : "<none>")));
         } else {
+
+          if (destExt === ".gltf") {
+            destPath = path.join(destPath + "_out", path.basename(destFile, destExt));
+          }
+
           resolve(destPath + destExt);
         }
       });

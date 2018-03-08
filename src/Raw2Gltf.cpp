@@ -590,8 +590,10 @@ ModelData *Raw2Gltf(
 
             } else if (!relativeFilename.empty()) {
                 image = new ImageData(relativeFilename, relativeFilename);
-                std::string outputPath = outputFolder + relativeFilename;
-                if (FileUtils::CopyFile(rawTexture.fileLocation, outputPath)) {
+
+                std::string outputPath = outputFolder + StringUtils::NormalizePath(relativeFilename);
+
+                if (FileUtils::CopyFile(rawTexture.fileLocation, outputPath, true)) {
                     if (verboseOutput) {
                         fmt::printf("Copied texture '%s' to output folder: %s\n", textureName, outputPath);
                     }

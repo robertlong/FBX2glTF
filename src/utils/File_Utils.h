@@ -20,7 +20,7 @@ namespace FileUtils {
 
     bool CreatePath(const char *path);
 
-    bool CopyFile(const std::string &srcFilename, const std::string &dstFilename);
+    bool CopyFile(const std::string &srcFilename, const std::string &dstFilename, bool createPath = false);
 }
 
 #endif // !__FILE_UTILS_H__

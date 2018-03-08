@@ -1380,6 +1380,7 @@ FindFbxTextures(
             continue;
         }
         const std::string inferredName = GetInferredFileName(pFileTexture->GetFileName(), searchFolder, fileList);
+
         if (inferredName.empty()) {
             fmt::printf("Warning: could not find a local image file for texture: %s.\n"
             "Original filename: %s\n", pFileTexture->GetName(), pFileTexture->GetFileName());
