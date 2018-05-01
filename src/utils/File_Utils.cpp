@@ -55,6 +55,12 @@ namespace FileUtils {
         return std::string(cwd);
     }
 
+    bool FileExists(const std::string &filePath)
+    {
+        std::ifstream stream(filePath);
+        return stream.good();
+    }
+
     bool FolderExists(const std::string &folderPath)
     {
 #if defined( __unix__ ) || defined( __APPLE__ )
@@ -187,10 +193,10 @@ namespace FileUtils {
         std::streamsize srcSize = srcFile.tellg();
         srcFile.seekg(0, std::ios::beg);
 
-		if (createPath && !CreatePath(dstFilename.c_str())) {
-			fmt::printf("Warning: Couldn't create directory %s.\n", dstFilename);
-			return false;
-		}
+        if (createPath && !CreatePath(dstFilename.c_str())) {
+            fmt::printf("Warning: Couldn't create directory %s.\n", dstFilename);
+            return false;
+        }
 
         std::ofstream dstFile(dstFilename, std::ios::binary | std::ios::trunc);
         if (!dstFile) {

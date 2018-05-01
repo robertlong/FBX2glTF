@@ -290,8 +290,10 @@ struct FbxTraditionalMaterialInfo : FbxMaterialInfo {
         // the normal map can only ever be a map, ignore everything else
         std::tie(std::ignore, res->texNormal) = getSurfaceVector(FbxSurfaceMaterial::sNormalMap);
 
-        // shininess can be a map or a factor
-        std::tie(res->shininess, res->texShininess) = getSurfaceScalar(FbxSurfaceMaterial::sShininess);
+        // shininess can be a map or a factor; afaict the map is always 'ShininessExponent' and the
+        // value is always found in 'Shininess' but only sometimes in 'ShininessExponent'.
+        std::tie(std::ignore, res->texShininess) = getSurfaceScalar("ShininessExponent");
+        std::tie(res->shininess, std::ignore) = getSurfaceScalar("Shininess");
 
         // for transparency we just want a constant vector value;
         FbxVector4 transparency;
@@ -399,12 +401,14 @@ public:
         for (int deformerIndex = 0; deformerIndex < pMesh->GetDeformerCount(); deformerIndex++) {
             FbxSkin *skin = reinterpret_cast< FbxSkin * >( pMesh->GetDeformer(deformerIndex, FbxDeformer::eSkin));
             if (skin != nullptr) {
+                const int clusterCount = skin->GetClusterCount();
+                if (clusterCount == 0) {
+                    continue;
+                }
                 int controlPointCount = pMesh->GetControlPointsCount();
-
                 vertexJointIndices.resize(controlPointCount, Vec4i(0, 0, 0, 0));
                 vertexJointWeights.resize(controlPointCount, Vec4f(0.0f, 0.0f, 0.0f, 0.0f));
 
-                const int clusterCount = skin->GetClusterCount();
                 for (int clusterIndex = 0; clusterIndex < clusterCount; clusterIndex++) {
                     FbxCluster   *cluster        = skin->GetCluster(clusterIndex);
                     const int    indexCount      = cluster->GetControlPointIndicesCount();
@@ -1323,6 +1327,9 @@ static void ReadAnimations(RawModel &raw, FbxScene *pScene)
 
 static std::string GetInferredFileName(const std::string &fbxFileName, const std::string &directory, const std::vector<std::string> &directoryFileList)
 {
+    if (FileUtils::FileExists(fbxFileName)) {
+        return fbxFileName;
+    }
     // Get the file name with file extension.
     const std::string fileName = StringUtils::GetFileNameString(StringUtils::GetCleanPathString(fbxFileName));
 
@@ -1423,9 +1430,17 @@ bool LoadFBXFile(RawModel &raw, const char *fbxFileName, const char *textureExte
     // Use Y up for glTF
     FbxAxisSystem::MayaYUp.ConvertScene(pScene);
 
-    // Use meters as the default unit for glTF
+    // FBX's internal unscaled unit is centimetres, and if you choose not to work in that unit,
+    // you will find scaling transfgrms on all the children of the root node. Those transforms are
+    // superfluous and cause a lot of people a lot of trouble. Luckily we can get rid of them by
+    // converting to CM here (which just gets rid of the scaling), and then we pre-multiply the
+    // scale factor into every vertex position (and related attributes) instead.
     FbxSystemUnit sceneSystemUnit = pScene->GetGlobalSettings().GetSystemUnit();
-    scaleFactor = FbxSystemUnit::m.GetConversionFactorFrom(sceneSystemUnit);
+    if (sceneSystemUnit != FbxSystemUnit::cm) {
+        FbxSystemUnit::cm.ConvertScene(pScene);
+    }
+    // this is always 0.01, but let's opt for clarity.
+    scaleFactor = FbxSystemUnit::m.GetConversionFactorFrom(FbxSystemUnit::cm);
 
     ReadNodeHierarchy(raw, pScene, pScene->GetRootNode(), 0, "");
     ReadNodeAttributes(raw, pScene, pScene->GetRootNode(), textureLocations);

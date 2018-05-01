@@ -69,13 +69,13 @@ Some of these switches are not obvious:
   but it can be useful e.g. for loaders that don't understand the .glb format.
 - `--flip-u` and `--flip-v`, when enabled, will apply a `x -> (1.0 - x)`
   function to all `u` or `v` texture coordinates respectively. The `u` version
-  is perhaps not commonly used, but flipping `v` is **the default behaviour*.
+  is perhaps not commonly used, but flipping `v` is **the default behaviour**.
   Your FBX is likely constructed with the assumption that `(0, 0)` is bottom
   left, whereas glTF has `(0, 0)` as top left. To produce spec-compliant glTF,
   we must flip the texcoords. To request unflipped coordinates:
 - `--long-indices` lets you force the use of either 16-bit or 32-bit indices.
   The default option is auto, which make the choice on a per-mesh-size basis.
-- `--compute-mormals` controls when automatic vertex normals should be computed
+- `--compute-normals` controls when automatic vertex normals should be computed
   from the mesh. By default, empty normals (which are forbidden by glTF) are
   replaced. A choice of 'missing' implies 'broken', but additionally creates
   normals for models that lack them completely. 
@@ -236,12 +236,12 @@ ratification process**
 Given the command line flag --pbr-metallic-roughness, we throw ourselves into
 the warm embrace of glTF 2.0's PBR preference.
 
-As mentioned above, there is lilttle consensus in the world on how PBR should be
+As mentioned above, there is little consensus in the world on how PBR should be
 represented in FBX. At present, we support only one format: Stingray PBS. This
-is a featue that comes bundled with Maya, and any PBR model exported through
+is a feature that comes bundled with Maya, and any PBR model exported through
 that route should be digested propertly by FBX2glTF.
 
-(A happy note: Allegorithmic's Susbstance Painter also exports Stingray PBS,
+(A happy note: Allegorithmic's Substance Painter also exports Stingray PBS,
 when hooked up to Maya.)
 
 ## Draco Compression
